@@ -1,0 +1,259 @@
+.DataTableText {
+  text-align: left;
+}
+.order-header-top {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: 10;
+  margin-left: 10;
+  margin-right: 10;
+}
+.page-details {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  padding: 20px 0px;
+}
+.main-content {
+  flex: 0.7;
+}
+.smallcontent {
+  flex: 0.3;
+  padding-left: 20px;
+}
+
+.loading {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 1000000;
+  background-color: #ffffffc5;
+}
+.loading .spinner {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+}
+.setting-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  margin-right: 60px;
+  margin-top: 15px;
+}
+
+#PolarisSelect2 {
+  background-color: #fff;
+}
+.orderdetails-container {
+  padding: 20px;
+}
+.results-container {
+  flex: 0.3;
+
+  margin-top: 20px;
+  margin-left: 10px;
+}
+.orderscreen-header {
+  margin-top: 20px;
+  flex: 0.7;
+  margin-right: 10px;
+}
+.product-fullfillment-card {
+  display: flex;
+  /* border: solid 1px grey; */
+  background-color: #00000008;
+  margin: 10px;
+  flex-wrap: wrap;
+  padding: 10px;
+  border-radius: 5px;
+}
+.product-fullfillment-card-img {
+  flex: 0.15;
+  align-self: center;
+  /* align-content: center; */
+}
+.product-fullfillment-card-quantity {
+  flex: 0.15;
+  text-align: center;
+  /* align-self: center; */
+}
+.product-fullfillment-card-details {
+  flex: 0.7;
+  flex-direction: column;
+  margin: 5px;
+  padding-left: 10px;
+}
+.product-img {
+  width: 50px;
+  height: 100%;
+  border-radius: 2px;
+  align-content: center;
+  /* margin-top: 5px; */
+}
+.title-text {
+  font-weight: 600;
+}
+.quantity-text {
+    padding-left: 5px;
+    text-align: left;
+  font-weight: 700;
+}
+.orderid-text {
+  font-weight: lighter;
+}
+.productfill-card {
+  padding: 20px;
+}
+.search-top-div {
+  display: flex;
+  flex-direction: row;
+}
+.list-title {
+  font-weight: 600;
+}
+.product-image-section {
+  display: flex;
+  flex-direction: row;
+}
+.orderscreen-instruction {
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+}
+.orderscreen-heading {
+  font-weight: bold;
+}
+.orderscreen-discription {
+  font-weight: 400;
+}
+.setting-screen-container {
+  margin-top: 20px;
+  margin-left: 40px;
+  margin-right: 40px;
+  margin-bottom: 40px;
+}
+.setting-screen-top-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.setting-heading {
+  display: flex;
+  flex-direction: row;
+}
+.setting-text {
+  margin-left: 5px;
+  font-weight: 600;
+  font-size: large;
+  text-align: center;
+  align-self: center;
+}
+.setting-screen-fullfillment-section {
+  display: flex;
+  flex-direction: row;
+  margin-top: 10px;
+}
+.setting-screen-left-tab {
+  flex: 0.4;
+  margin-right: 20px;
+}
+
+.setting-screen-right-tab {
+  flex: 0.6;
+}
+.setting-screen-left-heading {
+  margin-top: 20px;
+  font-weight: 600;
+}
+.Form-tags {
+  margin-bottom: 10px;
+}
+.setting-screen-left-discription {
+  font-weight: lighter;
+  font-size: small;
+}
+.add-new-carrier-button {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+.polaris-rows-heading {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.fulfill {
+  margin-top: 5px;
+}
+.order-status {
+  display: flex;
+  flex-direction: row;
+  margin-left: 15px;
+  margin-right: 15px;
+  margin-top: 10px;
+  justify-content: space-between;
+}
+.order-status-number {
+  font-weight: bold;
+  margin-left:5px; 
+}
+#customers {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#customers td,
+#customers th {
+  /* border: 1px solid #ddd; */
+  padding: 8px;
+}
+
+#customers tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+#customers tr:hover {
+  background-color: #f6f6f6;
+}
+
+#customers th {
+  padding-top: 12px;
+  /* padding-bottom: 12px; */
+  text-align: left;
+  background-color: white;
+  color: #232323;
+  border-bottom: 1px solid #232323;
+}
+
+.scanned-div {
+  background-color: #e7e9eb !important;
+  /* color: white; */
+}
+
+.showTick{
+    display: flex;
+    flex-direction: row;
+    
+}
+.title{
+  margin-top: -20px;
+}
+.Card-customise{
+  margin-top:-10px ;
+}
+.bottom{
+  padding-bottom:3.5px ;
+  
+}
+.bottom-button{
+  margin-top: 10px;
+  padding-bottom:10px ;
+}
+
+.Polaris-Button--iconOnly {
+  padding: 0.5rem;
+ 
+}
