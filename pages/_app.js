@@ -62,7 +62,7 @@ class MyApp extends App {
           config={{
             apiKey: API_KEY,
             host: host,
-            forceRedirect: true,
+            // forceRedirect: true,
           }}
         >
         

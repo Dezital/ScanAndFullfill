@@ -173,25 +173,18 @@ function index(props) {
     setOrderNumber(value);
   };
   //submit order id to get orders details
-  const handleOrderidSubmit = (e) => {
-    var orderdetails;
-    orders.map((val, index) => {
-      if (val.order_number == ordernumber) {
-        id = val.id;
-        orderdetails = val;
-      }
+  const handleOrderidSubmit = async(e) => {
+    setLoading(true)
+    const token = await getSessionToken(app);
+    const res = await fetch("/ordersNumber", {
+      method: "POST",
+      body: JSON.stringify({ ordernumber }),
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-type": "text/plain",
+      },
     });
-    if (ordernumber !== null) {
-      const handleClick = async (item) => {
-        if (orderdetails.fulfillment_status == "fulfilled") {
-          playErrorSound("This Order is already Fullfilled");
-        } else {
-          setLoading(true);
-          const token = await getSessionToken(app);
-          const res = await fetch(`/ordersdetails?id=${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          const responseData = await res.json();
+    const responseData = await res.json();
           if (responseData.status == "OK") {
             SetOrderDetails(responseData.data);
             if (responseData.data.fulfillment_status == "fulfilled") {
@@ -204,22 +197,61 @@ function index(props) {
               setUserData(false);
             }
           } else {
-            alert("error in fetching data");
+           playErrorSound("Invalid order Number")
           }
 
           setLoading(false);
-        }
-      };
-      if (id) {
-        handleClick(orderid);
-      } else {
-        playErrorSound("No Order Found against this number");
-      }
-    } else {
-      // alert("No Order Found against this number ");
-      playErrorSound("No Order Found against this number");
-    }
-    setOrderNumber("");
+          setOrderNumber("");
+
+
+
+    
+    // var orderdetails;
+    // orders.map((val, index) => {
+    //   if (val.order_number == ordernumber) {
+    //     id = val.id;
+    //     orderdetails = val;
+    //   }
+    // });
+    // if (ordernumber !== null) {
+    //   const handleClick = async (item) => {
+    //     if (orderdetails.fulfillment_status == "fulfilled") {
+    //       playErrorSound("This Order is already Fullfilled");
+    //     } else {
+    //       setLoading(true);
+    //       const token = await getSessionToken(app);
+    //       const res = await fetch(`/ordersdetails?id=${id}`, {
+    //         headers: { Authorization: `Bearer ${token}` },
+    //       });
+    //       const responseData = await res.json();
+    //       if (responseData.status == "OK") {
+    //         SetOrderDetails(responseData.data);
+    //         if (responseData.data.fulfillment_status == "fulfilled") {
+    //           playErrorSound("This Order is already Fullfilled");
+
+    //           setLoading(false);
+    //         } else {
+    //           setOrderItems(responseData.data.line_items);
+    //           SetShowOrderDetails(true);
+    //           setUserData(false);
+    //         }
+    //       } else {
+    //         alert("error in fetching data");
+    //       }
+
+    //       setLoading(false);
+    //     }
+    //   };
+    //   if (id) {
+    //     handleClick(orderid);
+    //   } else {
+    //     playErrorSound("No Order Found against this number");
+    //   }
+    // } else {
+    //   // alert("No Order Found against this number ");
+    //   playErrorSound("No Order Found against this number");
+    // }
+    // setOrderNumber("");
   };
   //getting list of orders from db
   const getOrders = async () => {
@@ -230,8 +262,14 @@ function index(props) {
       const res = await fetch("/orders", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      
+      const resp = await fetch("/ordersNumber", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
       const responseData = await res.json();
       if (responseData.status == "OK") {
+        console.log("orders",responseData.data)
         SetOrders(responseData.data);
         setLoading(false);
       }

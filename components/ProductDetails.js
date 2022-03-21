@@ -109,9 +109,9 @@ function ProductDetails({
     var wiegt_in_kg = orderdetails.total_weight / 1000;
     setTotalWeight(wiegt_in_kg);
     //fetching tags already that are on a order
-    var ordertags = orderdetails.tags;
+     let ordertags = orderdetails.tags;
 
-    var productArray = ordertags.split(",");
+     var productArray = ordertags.split(",");
     if (productArray.length > 0) {
       setPreviousTags(productArray);
     }

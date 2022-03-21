@@ -7,8 +7,12 @@ import Koa from "koa";
 import next from "next";
 import Router from "koa-router";
 import Shop from "./models/shopsettings";
+import { createClient, getSubscriptionUrl ,getAppSubscriptionStatus} from "./handlers";
+
 const mongoose = require("mongoose");
 const koaBody = require("koa-body");
+var cron = require("node-cron");
+let ctxglobal;
 
 dotenv.config();
 const port = parseInt(process.env.PORT, 10) || 8081;
@@ -47,7 +51,9 @@ app.prepare().then(async () => {
         const { shop, accessToken, scope } = ctx.state.shopify;
         const host = ctx.query.host;
         ACTIVE_SHOPIFY_SHOPS[shop] = scope;
+        console.log(host)
 
+        /* added this section for Billing API implementation */
         const response = await Shopify.Webhooks.Registry.register({
           shop,
           accessToken,
@@ -62,9 +68,29 @@ app.prepare().then(async () => {
             `Failed to register APP_UNINSTALLED webhook: ${response.result}`
           );
         }
+        const client = createClient(shop, accessToken);
+        const hasSubscription = await getAppSubscriptionStatus(client)
+        if(hasSubscription){
+          console.log("already has subscription")
+            ctx.redirect(`/?shop=${shop}&host=${host}`);
+        }else{
+          console.log("billing company exists")
+          await getSubscriptionUrl(client)
+          .then((billingUrl) => {
+            console.log("going to billing ")
+            ctx.redirect(billingUrl);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+
+          
+        }
 
         // Redirect to app with shop parameter upon auth
-        ctx.redirect(`/?shop=${shop}&host=${host}`);
+       
+        // console.log(ctx);
+        // await getSubscriptionUrl(ctx);
       },
     })
   );
@@ -106,6 +132,7 @@ app.prepare().then(async () => {
         });
     } catch (error) {}
   });
+
   router.post("/updatePartialTags", async (ctx) => {
     const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
     const shop = session.shop;
@@ -151,16 +178,14 @@ app.prepare().then(async () => {
     } catch (error) {}
   });
 
-  // file to load on start of app
   router.get("/getMyShopSettings", async (ctx) => {
     const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
     const shop = session.shop;
-    // console.log("Logging shop", shop);
 
     try {
       await Shop.findOne({ shopName: shop })
         .then((result) => {
-          console.log("found", result);
+          // console.log("found", result);
           var response = result;
           ctx.body = {
             status: "OK",
@@ -178,14 +203,13 @@ app.prepare().then(async () => {
   router.get("/products", async (ctx) => {
     const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
     const shop = session.shop;
-    console.log("Logging shop", shop);
     let productList = [];
     try {
       const client = new Shopify.Clients.Rest(
         session.shop,
         session.accessToken
       );
-      console.log("Logging After Client", client);
+
       await client
         .get({
           path: `products`,
@@ -194,8 +218,6 @@ app.prepare().then(async () => {
           productList = body.products;
         })
         .catch((err) => console.log(err));
-      console.log("Logging products", productList);
-      console.log("products load 3rd time");
     } catch (err) {
       console.log("Err in cath", err);
     }
@@ -208,17 +230,15 @@ app.prepare().then(async () => {
   // To Fetch all orders from store
   router.get("/orders", async (ctx) => {
     const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
-    const shop = session.shop;
-    // console.log("Logging shop", shop);
+    const client = createClient(session.shop, session.accessToken);
+
     let ordersList = [];
     try {
-      const client = new Shopify.Clients.Rest(
+      const clients = new Shopify.Clients.Rest(
         session.shop,
         session.accessToken
       );
-
-      // console.log("Logging After Client", client);
-      await client
+      await clients
         .get({
           path: `orders`,
           query: { status: "any" },
@@ -238,21 +258,76 @@ app.prepare().then(async () => {
     ctx.status = 200;
   });
 
-  // To fetch single order details
-  router.get("/ordersdetails", async (ctx) => {
-    let id = ctx.request.url;
-    let productid = id.replace("/ordersdetails?id=", "");
-
+  // searching order by order number
+  router.post("/ordersNumber", async (ctx) => {
     const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
-    const shop = session.shop;
-
+    const order_number = JSON.parse(ctx.request.body).ordernumber;
     let ordersList = [];
+
     try {
       const client = new Shopify.Clients.Rest(
         session.shop,
         session.accessToken
       );
+      await client
+        .get({
+          path: `orders`,
+          query: { name: order_number },
+        })
+        .then(({ body }) => {
+          console.log(body);
+          ordersList = body.orders;
+        })
+        .catch((err) => console.log(err));
+    } catch (err) {
+      console.log("Err in cath", err);
+    }
+    if (ordersList.length > 0) {
+      var orderid = ordersList[0].id;
+      let ordersDetails = [];
 
+      try {
+        const client = new Shopify.Clients.Rest(
+          session.shop,
+          session.accessToken
+        );
+        await client
+          .get({
+            path: `orders/${orderid}`,
+          })
+          .then(({ body }) => {
+            console.log("product detatis for an order");
+            ordersDetails = body.order;
+          })
+          .catch((err) => console.log(err));
+      } catch (err) {
+        console.log("Err in cath", err);
+      }
+      ctx.body = {
+        status: "OK",
+        data: ordersDetails,
+      };
+      ctx.status = 200;
+    } else {
+      ctx.body = {
+        status: "NOTFOUND",
+      };
+      ctx.status = 200;
+    }
+  });
+
+  // To fetch single order details
+  router.get("/ordersdetails", async (ctx) => {
+    let id = ctx.request.url;
+    let productid = id.replace("/ordersdetails?id=", "");
+    let ordersList = [];
+    const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
+
+    try {
+      const client = new Shopify.Clients.Rest(
+        session.shop,
+        session.accessToken
+      );
       await client
         .get({
           path: `orders/${productid}`,
@@ -270,11 +345,10 @@ app.prepare().then(async () => {
     };
     ctx.status = 200;
   });
-  // For metafeild
+
+  // For Adding settings
   router.post("/settings", async (ctx) => {
     const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
-    const shop = session.shop;
-    console.log("App for this meta data and metafeild");
     try {
       const client = new Shopify.Clients.Rest(
         session.shop,
@@ -290,46 +364,16 @@ app.prepare().then(async () => {
         })
         .catch((err) => console.log(err));
     } catch (error) {}
-
-    // try {
-    //   const client = new Shopify.Clients.Rest(
-    //     session.shop,
-    //     session.accessToken
-    //   );
-
-    //   console.log("Logging After Client", client);
-    //   await client
-    //     .post({
-    //       path: "metafields",
-    //       data: {"metafield":{"namespace":"inventory00","key":"warehouse","value":25,"type":"number_integer","owner_resource":"shop"}},
-    //       type: DataType.JSON,
-    //     })
-    //     .then(({ body }) => {
-    //       console.log(body);
-    //       console.log("Yar hogaya hai")
-    //     })
-    //     .catch((err) => console.log("this is errors",err));
-    // } catch (err) {
-    //   console.log("Err in cath", err);
-    // }
-    // ctx.body = {
-    //   status: "OK",
-    //   data: ordersList,
-    // };
-    // ctx.status = 200;
   });
 
   // To Update the Order details
   router.post("/updateorder", async (ctx) => {
     const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
-    const shop = session.shop;
     const TrackingNumber = JSON.parse(ctx.request.body).trackinNumber;
     var tags = JSON.parse(ctx.request.body).tags;
     const orderdetails = JSON.parse(ctx.request.body).orderdetails;
-    const orderItems = JSON.parse(ctx.request.body).orderItems;
     const trackingCompany = JSON.parse(ctx.request.body).trackingCompany;
     const trackingURl = JSON.parse(ctx.request.body).trackingURl;
-
     const orderid = orderdetails.id;
     const locationid = orderdetails.location_id;
     var tag = tags.toString();
@@ -354,7 +398,6 @@ app.prepare().then(async () => {
         })
         .catch((err) => console.log(err));
     } catch (error) {}
-    //hello start
 
     try {
       const client = new Shopify.Clients.Rest(
@@ -393,9 +436,9 @@ app.prepare().then(async () => {
     }
   });
 
+  //partial fullfillment
   router.post("/particalFulFilment", async (ctx) => {
     const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
-    const shop = session.shop;
     const TrackingNumber = JSON.parse(ctx.request.body).trackinNumber;
     var tags = JSON.parse(ctx.request.body).tags;
     const orderdetails = JSON.parse(ctx.request.body).orderdetails;
@@ -404,21 +447,11 @@ app.prepare().then(async () => {
     const trackingURl = JSON.parse(ctx.request.body).trackingURl;
 
     orderItems.forEach((element) => {
-    
-      var quantity=element["scanned"];
+      var quantity = element["scanned"];
       element["quantity"] = quantity;
     });
-
-    console.log("order items", orderItems);
-
     const orderid = orderdetails.id;
     const locationid = orderdetails.location_id;
-    var tag = tags.toString();
-    var respon = [];
-    var Data_error;
-
-
-
 
     try {
       const client = new Shopify.Clients.Rest(
@@ -430,12 +463,12 @@ app.prepare().then(async () => {
           path: `orders/${orderid}/fulfillments`,
           data: {
             fulfillment: {
-              "location_id": locationid,
-              "tracking_number": "232323",
-              "tracking_company": "TCS",
-              "tracking_urls": ["www.htttps.com"],
-              "notify_customer": false,
-              "line_items": orderItems,
+              location_id: locationid,
+              tracking_number: TrackingNumber,
+              tracking_company: trackingCompany,
+              tracking_urls: [trackingURl],
+              notify_customer: false,
+              line_items: orderItems,
             },
           },
           type: DataType.JSON,
@@ -454,27 +487,19 @@ app.prepare().then(async () => {
           ctx.status = 400;
         });
     } catch (error) {
-      console.log("errro in fullfilment",error);
+      console.log("errro in fullfilment", error);
     }
-    
-
-   
-    //hello start
   });
 
   //to getproductImages and barcode
   router.post("/getImage", async (ctx) => {
     const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
-    const shop = session.shop;
     const product_id = JSON.parse(ctx.request.body).product_id;
     const variant_id = JSON.parse(ctx.request.body).variant_id;
-
     var respon = [];
     let responseBarcode;
-    console.log("Product id of the product", product_id);
-    //
     let image;
-    let varient;
+
     try {
       const client = new Shopify.Clients.Rest(
         session.shop,
@@ -488,7 +513,6 @@ app.prepare().then(async () => {
           respon = body.images;
           image = respon[0].src;
         })
-
         .catch((err) => console.log(err));
     } catch (error) {}
 
@@ -508,50 +532,12 @@ app.prepare().then(async () => {
         })
         .catch((err) => console.log(err));
     } catch (error) {}
-    //
-
     ctx.body = {
       status: "OK",
       data: image,
       barcode: responseBarcode,
     };
     ctx.status = 200;
-  });
-  //metafields
-  router.get("/getMetafeild", async (ctx) => {
-    const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
-    const shop = session.shop;
-    try {
-      const client = new Shopify.Clients.Rest(
-        session.shop,
-        session.accessToken
-      );
-      await client
-        .post({
-          path: "metafields",
-          data: {
-            metafield: {
-              namespace: "inventory1",
-              key: "warehouse2",
-              value: "25",
-              type: "single_line_text_field",
-            },
-          },
-          type: DataType.JSON,
-        })
-        .then(({ body }) => {
-          console.log(body);
-        })
-
-        .catch((err) => console.log(err.response.body));
-    } catch (error) {}
-
-    // ctx.body = {
-    //   status: "OK",
-    //   data: image,
-    //   barcode:responseBarcode,
-    // };
-    // ctx.status = 200;
   });
 
   router.post("/webhooks", async (ctx) => {
