@@ -44,7 +44,7 @@ export const getSubscriptionUrl = async (client) => {
   let cUrl;
    await client
     .mutate({
-      mutation: RECURRING_CREATE(process.env.HOSTLT)
+      mutation: RECURRING_CREATE(process.env.HOST)
     })
     .then((response) => {
      cUrl= response.data.appSubscriptionCreate.confirmationUrl;
