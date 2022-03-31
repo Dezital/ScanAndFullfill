@@ -96,8 +96,8 @@
   font-weight: 600;
 }
 .quantity-text {
-    padding-left: 5px;
-    text-align: left;
+  padding-left: 5px;
+  text-align: left;
   font-weight: 700;
 }
 .orderid-text {
@@ -198,7 +198,7 @@
 }
 .order-status-number {
   font-weight: bold;
-  margin-left:5px; 
+  margin-left: 5px;
 }
 #customers {
   border-collapse: collapse;
@@ -233,27 +233,82 @@
   /* color: white; */
 }
 
-.showTick{
-    display: flex;
-    flex-direction: row;
-    
+.showTick {
+  display: flex;
+  flex-direction: row;
 }
-.title{
+.title {
   margin-top: -20px;
 }
-.Card-customise{
-  margin-top:-10px ;
+.Card-customise {
+  margin-top: -10px;
 }
-.bottom{
-  padding-bottom:3.5px ;
-  
+.bottom {
+  padding-bottom: 3.5px;
 }
-.bottom-button{
+.bottom-button {
   margin-top: 10px;
-  padding-bottom:10px ;
+  padding-bottom: 10px;
 }
 
 .Polaris-Button--iconOnly {
   padding: 0.5rem;
- 
+}
+.tabs {
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1px solid #c9cccf;
+  height: 40px;
+  max-height: 50px;
+  width: 100%;
+  /* background-color: #232323; */
+}
+.left-tabs {
+  margin-left: 2.5em;
+  display: flex;
+  flex: 0.5;
+  flex-direction: row;
+  align-items: center;
+  text-align: center;
+}
+.right-tabs{
+  /* flex-direction: row-reverse; */
+  display: flex;
+  flex:0.5;
+  justify-content: flex-end;
+  margin-right: 2.5em;
+}
+.tabs-items {
+  margin-right: 20px;
+  justify-content: space-between;
+}
+.tabs-items:hover {
+  cursor: pointer;
+  color: #008060;
+}
+.active-tab {
+  color: #008060;
+}
+.border {
+  border: 1.5px solid #008060;
+}
+.item-content {
+  line-height: 38px;
+}
+.pageclass {
+  margin:2.5em;
+}
+.tabs-button{
+  height: 32px;
+  width: 100px;
+  background-color: #008060;
+  color: white;
+  text-align: center;
+  margin-top: 3px;
+  padding: 6px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+
 }

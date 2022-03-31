@@ -27,6 +27,8 @@ import ProductDetails from "../components/ProductDetails";
 import OrderTopTab from "../components/OrderTopTab";
 import store from "store-js";
 import { useShowError } from "../components/hooks/useShowError";
+import HelpPage from "../components/HelpPage";
+import TopHeader from "../components/TopHeader";
 
 function index(props) {
   const [orders, SetOrders] = useState([]);
@@ -46,11 +48,13 @@ function index(props) {
   const [selected, setSelected] = useState("");
   const [pageToLoad, setPageToLoad] = useState(false);
   const [options, setOptions] = useState([]);
+  const [activehelp, setActiveHelp] = useState(false);
+  const [activehome, setActiveHome] = useState(true);
 
   useEffect(() => {
-    getOrders();
-    getAppSettings();
-    getShippingCompanies();
+  
+     getAppSettings();
+     getShippingCompanies();
   }, []);
 
   useEffect(() => {
@@ -79,11 +83,11 @@ function index(props) {
       });
       const responseData = await res.json();
       if (responseData.status == "OK") {
-        store.set('partialFullfillment',responseData.data.ParticalTags)
+        store.set("partialFullfillment", responseData.data.ParticalTags);
         store.set("CarrierCompanies", responseData.data.carrier);
         store.set("fullfilmentTags", responseData.data.FullfillTags);
-        getShippingCompanies()
-        setPageToLoad(!pageToLoad)
+        getShippingCompanies();
+        setPageToLoad(!pageToLoad);
       }
     } catch (error) {
       // useShowError("An Error has accoured in fetching data");
@@ -110,6 +114,9 @@ function index(props) {
     refreshpage = refreshpage + 1;
     setPageToLoad(!pageToLoad);
   };
+
+  //handle the change of page
+ 
 
   var refreshpage = 0;
   var id;
@@ -173,8 +180,8 @@ function index(props) {
     setOrderNumber(value);
   };
   //submit order id to get orders details
-  const handleOrderidSubmit = async(e) => {
-    setLoading(true)
+  const handleOrderidSubmit = async (e) => {
+    setLoading(true);
     const token = await getSessionToken(app);
     const res = await fetch("/ordersNumber", {
       method: "POST",
@@ -185,27 +192,24 @@ function index(props) {
       },
     });
     const responseData = await res.json();
-          if (responseData.status == "OK") {
-            SetOrderDetails(responseData.data);
-            if (responseData.data.fulfillment_status == "fulfilled") {
-              playErrorSound("This Order is already Fullfilled");
+    if (responseData.status == "OK") {
+      SetOrderDetails(responseData.data);
+      if (responseData.data.fulfillment_status == "fulfilled") {
+        playErrorSound("This Order is already Fullfilled");
 
-              setLoading(false);
-            } else {
-              setOrderItems(responseData.data.line_items);
-              SetShowOrderDetails(true);
-              setUserData(false);
-            }
-          } else {
-           playErrorSound("Invalid order Number")
-          }
+        setLoading(false);
+      } else {
+        setOrderItems(responseData.data.line_items);
+        SetShowOrderDetails(true);
+        setUserData(false);
+      }
+    } else {
+      playErrorSound("Invalid order Number");
+    }
 
-          setLoading(false);
-          setOrderNumber("");
+    setLoading(false);
+    setOrderNumber("");
 
-
-
-    
     // var orderdetails;
     // orders.map((val, index) => {
     //   if (val.order_number == ordernumber) {
@@ -253,31 +257,7 @@ function index(props) {
     // }
     // setOrderNumber("");
   };
-  //getting list of orders from db
-  const getOrders = async () => {
-    setLoading(true);
-    try {
-      const token = await getSessionToken(app);
 
-      const res = await fetch("/orders", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      const resp = await fetch("/ordersNumber", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      const responseData = await res.json();
-      if (responseData.status == "OK") {
-        console.log("orders",responseData.data)
-        SetOrders(responseData.data);
-        setLoading(false);
-      }
-    } catch (error) {
-      getOrders();
-      setLoading(true);
-    }
-  };
 
   //loading screen for index page
   if (loading) {
@@ -294,7 +274,7 @@ function index(props) {
 
   //setting screen
   if (setting) {
-    return <SettingsPage setSettings={setSettings}></SettingsPage>;
+    return <SettingsPage setActiveHelp={setActiveHelp} setSettings={setSettings} setActiveHome={setActiveHome}  activehome={activehome} activehelp={activehelp} setting={setting}></SettingsPage>;
   }
   // order details screen like where main loading shows
   if (showOrderDetails) {
@@ -311,7 +291,7 @@ function index(props) {
             Back
           </Button>
         </div>
-     
+
         <div className="product details div">
           <ProductDetails
             orderdetails={orderdetails}
@@ -329,7 +309,10 @@ function index(props) {
       </div>
     );
   }
-
+  //settings for users 
+  if(activehelp){
+    return <HelpPage setActiveHelp={setActiveHelp} setSettings={setSettings} setActiveHome={setActiveHome}  activehome={activehome} activehelp={activehelp} setting={setting}></HelpPage>
+  }
   // screen to scan order number
   if (userData) {
     return (
@@ -384,21 +367,11 @@ function index(props) {
     );
   }
 
-  //mainn screen to fetch tracking number and details
+  //main screen to fetch tracking number and details
   return (
     <div>
-      <div className="setting-header">
-        <div
-          className="setting-icon"
-          role="button"
-          style={{ cursor: "pointer" }}
-          onClick={handleSettings}
-        >
-          <Icon source={SettingsMajor} color="base" />
-          <div>Settings</div>
-        </div>
-      </div>
-      <Page>
+      <TopHeader setActiveHelp={setActiveHelp} setSettings={setSettings} setActiveHome={setActiveHome} activehome={activehome} activehelp={activehelp} setting={setting}></TopHeader>
+      <div className="pageclass">
         <Card title="Provide Required Information to Begin" sectioned>
           <Form onSubmit={handleSubmitForm}>
             <FormLayout>
@@ -425,7 +398,8 @@ function index(props) {
                 value={courier}
                 helpText={
                   <span>
-                    Select below to assign Courier and Tracking URL for fulfilled orders. 
+                    Select below to assign Courier and Tracking URL for
+                    fulfilled orders.
                   </span>
                 }
               />
@@ -435,7 +409,7 @@ function index(props) {
             </FormLayout>
           </Form>
         </Card>
-      </Page>
+      </div>
       <ToastContainer></ToastContainer>
     </div>
   );

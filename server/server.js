@@ -12,6 +12,7 @@ import { createClient, getSubscriptionUrl ,getAppSubscriptionStatus} from "./han
 const mongoose = require("mongoose");
 const koaBody = require("koa-body");
 var cron = require("node-cron");
+const nodemailer = require("nodemailer");
 let ctxglobal;
 
 dotenv.config();
@@ -61,7 +62,9 @@ app.prepare().then(async () => {
           topic: "APP_UNINSTALLED",
           webhookHandler: async (topic, shop, body) =>
             delete ACTIVE_SHOPIFY_SHOPS[shop],
-        });
+           
+        },console.log("unistall ")
+        );
 
         if (!response.success) {
           console.log(
@@ -71,14 +74,14 @@ app.prepare().then(async () => {
         const client = createClient(shop, accessToken);
         const hasSubscription = await getAppSubscriptionStatus(client)
         if(hasSubscription){
-          console.log("already has subscription")
+          console.log("This shop has already subscribed to billing")
             ctx.redirect(`/?shop=${shop}&host=${host}`);
         }else{
-          console.log("billing company exists")
+          console.log("Not already subscribed")
           await getSubscriptionUrl(client)
           .then((billingUrl) => {
-            console.log("going to billing ")
-            ctx.redirect(billingUrl);
+            console.log("redirecting to billing url")
+            ctx.redirect(billingUrl)
           })
           .catch((err) => {
             console.log(err);
@@ -540,7 +543,49 @@ app.prepare().then(async () => {
     ctx.status = 200;
   });
 
+  router.post("/sendMail", async (ctx) => {
+    // const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
+    // const product_id = JSON.parse(ctx.request.body).product_id;
+    // const variant_id = JSON.parse(ctx.request.body).variant_id;
+    const email=JSON.parse(ctx.request.body).email;
+    const name=JSON.parse(ctx.request.body).name;
+    const message=JSON.parse(ctx.request.body).message;
+
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com", //replace with your email provider
+      port: 587,
+      auth: {
+        user: "dezital.shopifyapps@gmail.com",
+        pass: "Dezital@123",
+      },
+    });
+
+    const mail = {
+      from: email,
+      to:"dezital.shopifyapps@gmail.com" ,
+      // bcc:"dezital.shopifyapps@gmail.com",
+      subject: "Message from App",
+      text: `By ${name} email:${email} message:${message}`,
+    };
+    let res;
+
+    transporter.sendMail(mail, (err, data) => {
+      if (err) {
+        console.log(err);
+        ctx.response(500)
+        // res.status(500).send("Something went wrong.");
+      } else {
+        console.log("send message")
+        ctx.response(200)
+        // res.status(200).send("Email successfully sent to recipient!");
+      }
+    });
+ 
+
+  });
+
   router.post("/webhooks", async (ctx) => {
+    console.log("down in webhook")
     try {
       await Shopify.Webhooks.Registry.process(ctx.req, ctx.res);
       console.log(`Webhook processed, returned status code 200`);
