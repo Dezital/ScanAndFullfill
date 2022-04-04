@@ -13,6 +13,7 @@ import {
   Select,
   TextField,
 } from "@shopify/polaris";
+import { useShowSuccess } from "./hooks/useShowSuccess";
 
 function ContactUsForm() {
   const [email, setEmail] = useState("");
@@ -33,16 +34,14 @@ function ContactUsForm() {
   };
 
   const handleFormSubmit = async () => {
+    setError(false);
+    setErrorData("");
     console.log(name.length);
-    if (name.length < 3) {
-      setError(true);
-      setErrorData("Please Enter Your name");
-      console.log("not walid");
-    }
     if (message.length < 3) {
       setError(true);
       setErrorData("Enter Your message");
     }
+
     if (
       !email.match(
         /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
@@ -51,9 +50,16 @@ function ContactUsForm() {
       setError(true);
       alert("true");
 
-      setErrorData("your email Address is invalid");
+      setErrorData("Email Address is Invalid");
     }
+    if (name.length < 3) {
+      setError(true);
+      setErrorData("Name is invalid");
+      console.log("not valid");
+    }
+
     if (!error) {
+      console.log("email send ");
       const res = await fetch("/sendMail", {
         method: "POST",
         body: JSON.stringify({ name, email, message }),
@@ -61,6 +67,11 @@ function ContactUsForm() {
           "Content-type": "text/plain",
         },
       });
+
+      useShowSuccess("Your message has been sent successfully");
+      setName("");
+      setEmail("");
+      setMessage("");
     }
   };
 

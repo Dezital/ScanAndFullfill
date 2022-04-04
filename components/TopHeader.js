@@ -55,7 +55,7 @@ function TopHeader({ setSettings, setActiveHelp, setActiveHome ,activehome,activ
       </div>
 
       <div className="right-tabs">
-        <div className="tabs-button">Contact Us</div>
+        <div className="tabs-button"><a href="https://easyscanandfullfill.freshdesk.com/support/solutions" target="_blank" style={{textDecoration:"none",color:"white"}}>Contact Us</a></div>
       </div>
     </div>
   );

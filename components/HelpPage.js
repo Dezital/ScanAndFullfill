@@ -45,7 +45,7 @@ function HelpPage({
 
           {/* starting new section */}
 
-          {/* starting new section */}
+          
         </div>
 
         <div className="setting-screen-content">
@@ -57,7 +57,7 @@ function HelpPage({
             <div className="setting-screen-right-tab">
               <Card sectioned>
                 Browse our extensive Knowledge based for guides,popular Use
-                cases, tips and tricks. <a href="">Visit the knowledge base</a>
+                cases, tips and tricks. <a href="https://easyscanandfullfill.freshdesk.com/support/solutions" target="_blank">Visit the knowledge base</a>
               </Card>
             </div>
           </div>

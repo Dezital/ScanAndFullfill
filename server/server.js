@@ -24,13 +24,13 @@ const app = next({
 const handle = app.getRequestHandler();
 
 const dbURI =
-  "mongodb+srv://zeshan:Dezital123@dezital.dkjyz.mongodb.net/dezital?retryWrites=true&w=majority";
+  "mongodb+srv://zeshan:Dezital123@dezital.dkjyz.mongodb.net/dezital?retryWrites=true&w=majority&ssl=true";
 
 Shopify.Context.initialize({
   API_KEY: process.env.SHOPIFY_API_KEY,
   API_SECRET_KEY: process.env.SHOPIFY_API_SECRET,
   SCOPES: process.env.SCOPES.split(","),
-  HOST_NAME: process.env.HOST.replace(/https:\/\/|\/$/g, ""),
+  HOST_NAME: process.env.HOSTLT.replace(/https:\/\/|\/$/g, ""),
   API_VERSION: ApiVersion.October20,
   IS_EMBEDDED_APP: true,
   // This should be replaced with your preferred storage strategy
@@ -52,7 +52,7 @@ app.prepare().then(async () => {
         const { shop, accessToken, scope } = ctx.state.shopify;
         const host = ctx.query.host;
         ACTIVE_SHOPIFY_SHOPS[shop] = scope;
-        console.log(host)
+        
 
         /* added this section for Billing API implementation */
         const response = await Shopify.Webhooks.Registry.register({
@@ -74,11 +74,11 @@ app.prepare().then(async () => {
         const client = createClient(shop, accessToken);
         const hasSubscription = await getAppSubscriptionStatus(client)
         if(hasSubscription){
-          console.log("This shop has already subscribed to billing")
-            ctx.redirect(`/?shop=${shop}&host=${host}`);
+           console.log("This shop has already subscribed to billing")
+            
         }else{
           console.log("Not already subscribed")
-          await getSubscriptionUrl(client)
+          await getSubscriptionUrl(client,shop,host)
           .then((billingUrl) => {
             console.log("redirecting to billing url")
             ctx.redirect(billingUrl)
@@ -91,7 +91,7 @@ app.prepare().then(async () => {
         }
 
         // Redirect to app with shop parameter upon auth
-       
+         ctx.redirect(`/?shop=${shop}&host=${host}`);
         // console.log(ctx);
         // await getSubscriptionUrl(ctx);
       },
