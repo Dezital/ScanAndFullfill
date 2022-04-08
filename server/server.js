@@ -14,6 +14,7 @@ const koaBody = require("koa-body");
 var cron = require("node-cron");
 const nodemailer = require("nodemailer");
 let ctxglobal;
+const crypto = require("crypto");
 
 dotenv.config();
 const port = parseInt(process.env.PORT, 10) || 8081;
@@ -593,6 +594,58 @@ app.prepare().then(async () => {
       console.log(`Failed to process webhook: ${error}`);
     }
   });
+  function verifyWebhookRequest(body,req) {
+    try {
+      const generatedHash = crypto
+        .createHmac("SHA256", Shopify.Context.API_SECRET_KEY)
+        .update(JSON.stringify(body), "utf8")
+        .digest("base64");
+      const ShopifyHeader = 'x-shopify-hmac-sha256';
+      const hmac = req.get(ShopifyHeader); 
+      const safeCompareResult = Shopify.Utils.safeCompare(generatedHash, hmac);
+      if (!!safeCompareResult) {
+        console.log('Safe')
+        return true;
+      } else {
+        console.log('Not Safe')
+        return false;
+      }
+    } catch (error) {
+      console.log('error', error)
+      return false;
+    }
+ }
+
+router.post("/customers/data_request", koaBody(), (ctx) => {
+  if (verifyWebhookRequest(ctx.request.body,ctx.request) === true) {
+    console.log('verified :)')
+    ctx.res.statusCode = 200;
+// do something with the ctx.request.body
+  } else {
+    console.log('Not verified')
+    ctx.res.statusCode = 401;
+  }
+});
+router.post("shop/redact", koaBody(), (ctx) => {
+  if (verifyWebhookRequest(ctx.request.body,ctx.request) === true) {
+    console.log('verified :)')
+    ctx.res.statusCode = 200;
+// do something with the ctx.request.body
+  } else {
+    console.log('Not verified')
+    ctx.res.statusCode = 401;
+  }
+});
+router.post("customers/redact", koaBody(), (ctx) => {
+  if (verifyWebhookRequest(ctx.request.body,ctx.request) === true) {
+    console.log('verified :)')
+    ctx.res.statusCode = 200;
+// do something with the ctx.request.body
+  } else {
+    console.log('Not verified')
+    ctx.res.statusCode = 401;
+  }
+});
 
   router.post(
     "/graphql",
