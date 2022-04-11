@@ -8,6 +8,7 @@ import next from "next";
 import Router from "koa-router";
 import Shop from "./models/shopsettings";
 import { createClient, getSubscriptionUrl ,getAppSubscriptionStatus} from "./handlers";
+import helmet from "koa-helmet";
 
 const mongoose = require("mongoose");
 const koaBody = require("koa-body");
@@ -45,6 +46,34 @@ const ACTIVE_SHOPIFY_SHOPS = {};
 app.prepare().then(async () => {
   const server = new Koa();
   const router = new Router();
+
+
+  const setContentSecurityHeader = (ctx, next) => {
+    // Cookie is set after auth
+    if (ctx.cookies.get("shopOrigin")) {
+      return helmet.contentSecurityPolicy({
+        directives: {
+          defaultSrc: helmet.contentSecurityPolicy.dangerouslyDisableDefaultSrc,
+          frameAncestors: [
+            `https://${ctx.cookies.get("shopOrigin")}`,
+            "https://admin.shopify.com",
+          ],
+        },
+      })(ctx, next);
+    } else {
+      // Before auth => no cookie set...
+      return helmet.contentSecurityPolicy({
+        directives: {
+          defaultSrc: helmet.contentSecurityPolicy.dangerouslyDisableDefaultSrc,
+          frameAncestors: [
+            `https://${ctx.query.shop}`,
+            "https://admin.shopify.com",
+          ],
+        },
+      })(ctx, next);
+    }
+  };
+  server.use(setContentSecurityHeader);
   server.keys = [Shopify.Context.API_SECRET_KEY];
   server.use(
     createShopifyAuth({
@@ -52,7 +81,16 @@ app.prepare().then(async () => {
         // Access token and shop available in ctx.state.shopify
         const { shop, accessToken, scope } = ctx.state.shopify;
         const host = ctx.query.host;
+
+
+        // set shopOrigin cookie, so it can be used for click jacking header
+        ctx.cookies.set("shopOrigin", shop, {
+          httpOnly: false,
+          secure: true,
+          sameSite: "none",
+        });
         ACTIVE_SHOPIFY_SHOPS[shop] = scope;
+
         
 
         /* added this section for Billing API implementation */
