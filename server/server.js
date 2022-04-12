@@ -661,27 +661,28 @@ router.post("/customers/data_request", koaBody(), (ctx) => {
 // do something with the ctx.request.body
   } else {
     console.log('Not verified')
-    ctx.res.statusCode = 401;
+  ctx.res.statusCode = 401;
   }
 });
-router.post("shop/redact", koaBody(), (ctx) => {
+router.post("/shop/redact", koaBody(), (ctx) => {
   if (verifyWebhookRequest(ctx.request.body,ctx.request) === true) {
     console.log('verified :)')
     ctx.res.statusCode = 200;
 // do something with the ctx.request.body
   } else {
     console.log('Not verified')
-    ctx.res.statusCode = 401;
+  ctx.res.statusCode = 401;
   }
 });
-router.post("customers/redact", koaBody(), (ctx) => {
+router.post("/customers/redact", koaBody(), (ctx) => {
   if (verifyWebhookRequest(ctx.request.body,ctx.request) === true) {
     console.log('verified :)')
     ctx.res.statusCode = 200;
+    
 // do something with the ctx.request.body
   } else {
     console.log('Not verified')
-    ctx.res.statusCode = 401;
+  ctx.res.statusCode = 401;
   }
 });
 
@@ -701,6 +702,8 @@ router.post("customers/redact", koaBody(), (ctx) => {
     // This shop hasn't been seen yet, go through OAuth to create a session
     if (ACTIVE_SHOPIFY_SHOPS[shop] === undefined) {
       ctx.redirect(`/auth?shop=${shop}`);
+      ctx.response.statusCode=401;
+      
     } else {
       await handleRequest(ctx);
     }
