@@ -624,7 +624,7 @@ app.prepare().then(async () => {
   });
 
   router.post("/webhooks", async (ctx) => {
-    console.log("down in webhook")
+    
     try {
       await Shopify.Webhooks.Registry.process(ctx.req, ctx.res);
       console.log(`Webhook processed, returned status code 200`);
@@ -632,6 +632,7 @@ app.prepare().then(async () => {
       console.log(`Failed to process webhook: ${error}`);
     }
   });
+  
   function verifyWebhookRequest(body,req) {
     try {
       const generatedHash = crypto
@@ -639,9 +640,13 @@ app.prepare().then(async () => {
         .update(JSON.stringify(body), "utf8")
         .digest("base64");
       const ShopifyHeader = 'x-shopify-hmac-sha256';
+      console.log('generated hash',generatedHash);
+    
       const hmac = req.get(ShopifyHeader); 
+      console.log('hmac')
       const safeCompareResult = Shopify.Utils.safeCompare(generatedHash, hmac);
-      if (!!safeCompareResult) {
+      console.log('comparision results',safeCompareResult)
+      if (safeCompareResult) {
         console.log('Safe')
         return true;
       } else {
@@ -654,7 +659,32 @@ app.prepare().then(async () => {
     }
  }
 
-router.post("/customers/data_request", koaBody(), (ctx) => {
+router.post("/data_request", (ctx) => {
+
+    if (verifyWebhookRequest(ctx.request.body,ctx.request) === true) {
+    console.log('verified :)')
+    ctx.res.statusCode = 200;
+// do something with the ctx.request.body
+  } else {
+    console.log('Not verified')
+  ctx.res.statusCode = 401;
+  }
+  // ctx.res.statusCode = 200;
+  // console.log('ctx is ',ctx)
+  // console.log(ctx.res)
+
+  // console.log("data request for that")
+  // try {
+  //   await Shopify.Webhooks.Registry.process(ctx.req, ctx.res);
+  //   console.log(`Webhook processed, returned status code 200`);
+  // } catch (error) {
+  //   console.log(`Failed to process webhook: ${error}`);
+  // }
+  
+
+});
+router.post("/shop/redact",  (ctx) => {
+
   if (verifyWebhookRequest(ctx.request.body,ctx.request) === true) {
     console.log('verified :)')
     ctx.res.statusCode = 200;
@@ -663,22 +693,14 @@ router.post("/customers/data_request", koaBody(), (ctx) => {
     console.log('Not verified')
   ctx.res.statusCode = 401;
   }
+
+ 
 });
-router.post("/shop/redact", koaBody(), (ctx) => {
+router.post("/customers/redact", (ctx) => {
+ 
   if (verifyWebhookRequest(ctx.request.body,ctx.request) === true) {
     console.log('verified :)')
     ctx.res.statusCode = 200;
-// do something with the ctx.request.body
-  } else {
-    console.log('Not verified')
-  ctx.res.statusCode = 401;
-  }
-});
-router.post("/customers/redact", koaBody(), (ctx) => {
-  if (verifyWebhookRequest(ctx.request.body,ctx.request) === true) {
-    console.log('verified :)')
-    ctx.res.statusCode = 200;
-    
 // do something with the ctx.request.body
   } else {
     console.log('Not verified')
