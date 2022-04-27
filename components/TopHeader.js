@@ -2,7 +2,7 @@ import React from "react";
 
 function TopHeader({ setSettings, setActiveHelp, setActiveHome ,activehome,activehelp,setting}) {
   const handleTabs = (index) => {
-    console.log(index);
+ 
     {
       index == 1
         ? (setSettings(false), setActiveHelp(false), setActiveHome(true))

@@ -81,7 +81,7 @@ function ProductDetails({
 
   const handleItems = () => {
     var ispartialorder;
-    // console.log("the order details", orderdetails.fulfillment_status);
+   
     if (orderdetails.fulfillment_status == "partial") {
       setPartial(true);
       ispartialorder = 1;
@@ -91,7 +91,6 @@ function ProductDetails({
     var trackComp = store.get("selectedCourier");
     setTrackingCompany(trackComp);
 
-    console.log("tracking url is ", track);
     setTrackingUrl(track);
 
     var storetags = store.get("fullfilmentTags");
@@ -102,7 +101,7 @@ function ProductDetails({
     newtags.map((value) => {
       setTags((tags) => [...tags, value]);
     });
-    console.log("Final tags are", tags);
+ 
 
     setOrderNumber(orderdetails.order_number);
     // For assignment of total weight
@@ -145,10 +144,10 @@ function ProductDetails({
     var itemvalue = value;
     // fetching the product data
     line_items.forEach(async (element) => {
-      console.log(element["product_id"]);
+  
       var product_id = element["product_id"];
       var variant_id = element["variant_id"];
-      console.log(variant_id);
+  
       const token = await getSessionToken(app);
       const res = await fetch("/getImage", {
         method: "POST",
@@ -208,7 +207,7 @@ function ProductDetails({
     } catch (error) {
       playErrorSound();
       useShowError("An Error has occured in fullfillment");
-      console.log("an error has occured");
+    
       setModalOpen(false);
       setLoadingOpen(false);
       SetShowOrderDetails(false);
@@ -237,7 +236,7 @@ function ProductDetails({
   const handleSubmitSku = () => {
     var scanitems;
     var items = orderItems;
-    console.log(orderItems);
+
     orderItems.map((item, index) => {
       if (item.sku === sku || item.barcode === sku) {
         setHighLight(index);
@@ -279,7 +278,7 @@ function ProductDetails({
   };
 
   const handlePartialSubmission = async () => {
-    console.log("here are order items", orderItems);
+   
     try {
       const token = await getSessionToken(app);
       const res = await fetch("/particalFulFilment", {
@@ -315,7 +314,6 @@ function ProductDetails({
     } catch (error) {
       playErrorSound();
       useShowError("An Error has occured in fullfillment");
-      console.log("an error has occured");
       setModalOpen(false);
       setLoadingOpen(false);
       SetShowOrderDetails(false);

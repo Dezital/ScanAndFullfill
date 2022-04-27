@@ -36,7 +36,7 @@ function ShippinfCarrier() {
   useEffect(() => {
     if (loadingData) {
       var iscarrier = store.get("CarrierCompanies");
-      console.log("carrier value is ", iscarrier);
+  
       if (iscarrier) {
         setCarrier(iscarrier);
       }
@@ -81,7 +81,7 @@ function ShippinfCarrier() {
     var found = "false";
     carrier.map((value) => {
       if (value.name == trackingCompany) {
-        console.log("already exists");
+      
         found = "true";
       }
     });

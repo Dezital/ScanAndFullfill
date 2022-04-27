@@ -99,35 +99,25 @@ app.prepare().then(async () => {
           accessToken,
           path: "/webhooks",
           topic: "APP_UNINSTALLED",
-          webhookHandler: async (topic, shop, body) =>
-            delete ACTIVE_SHOPIFY_SHOPS[shop],
+          webhookHandler: async (topic, shop, body) =>{
+            console.log("WEBHOOK")
+            delete ACTIVE_SHOPIFY_SHOPS[shop]
            
-        },console.log("unistall ")
+          }
+         
+        }
         );
+        if (response.success){
+          console.log("response is here ",response)
 
+        }
         if (!response.success) {
           console.log(
             `Failed to register APP_UNINSTALLED webhook: ${response.result}`
           );
         }
-        const client = createClient(shop, accessToken);
-        const hasSubscription = await getAppSubscriptionStatus(client)
-        if(hasSubscription){
-           console.log("This shop has already subscribed to billing")
-            
-        }else{
-          console.log("Not already subscribed")
-          await getSubscriptionUrl(client,shop,host)
-          .then((billingUrl) => {
-            console.log("redirecting to billing url")
-            ctx.redirect(billingUrl)
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-
-          
-        }
+        
+   
 
         // Redirect to app with shop parameter upon auth
          ctx.redirect(`/?shop=${shop}&host=${host}`);
@@ -151,7 +141,34 @@ app.prepare().then(async () => {
     ctx.respond = false;
     ctx.res.statusCode = 200;
   };
+  router.get("/billingurl",async (ctx)=>{
+    const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
+    const client = createClient(session.shop,session.accessToken);
+    const hasSubscription = await getAppSubscriptionStatus(client)
+    if(hasSubscription){
+       console.log("This shop has already subscribed to billing")
+       ctx.body={
+         status:"OK"
+       }
+        
+    }else{
+      console.log("Not already subscribed")
+      await getSubscriptionUrl(client,shop,host)
+      .then((billingUrl) => {
+       ctx.body={
+         status:"pending",
+         data:billingUrl,
+       }
+      })
+      .catch((err) => {
+        console.log(err);
+      });
 
+      
+    }
+    ctx.status=200;
+
+  })
   // toupdate fullfilled tags  of store
   router.post("/updatetags", async (ctx) => {
     const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
@@ -223,7 +240,6 @@ app.prepare().then(async () => {
   router.get("/getMyShopSettings", async (ctx) => {
     const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
     const shop = session.shop;
-
     try {
       await Shop.findOne({ shopName: shop })
         .then((result) => {
@@ -303,6 +319,10 @@ app.prepare().then(async () => {
   // searching order by order number
   router.post("/ordersNumber", async (ctx) => {
     const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
+    let ordernumberrecived=  JSON.parse(ctx.request.body).ordernumber;
+    if(ordernumberrecived.includes('#')){
+      ordernumberrecived.replace('#','')
+    }
     const order_number = JSON.parse(ctx.request.body).ordernumber;
     let ordersList = [];
 
@@ -413,11 +433,39 @@ app.prepare().then(async () => {
     const session = await Shopify.Utils.loadCurrentSession(ctx.req, ctx.res);
     const TrackingNumber = JSON.parse(ctx.request.body).trackinNumber;
     var tags = JSON.parse(ctx.request.body).tags;
+    console.log('orders details',orderdetails)
     const orderdetails = JSON.parse(ctx.request.body).orderdetails;
     const trackingCompany = JSON.parse(ctx.request.body).trackingCompany;
     const trackingURl = JSON.parse(ctx.request.body).trackingURl;
     const orderid = orderdetails.id;
-    const locationid = orderdetails.location_id;
+    let locationid = orderdetails.location_id;
+
+    console.log("tracking number",trackingCompany,trackingURl,orderid,locationid)
+      if(locationid == null){
+        try {
+          const client = new Shopify.Clients.Rest(
+            session.shop,
+            session.accessToken
+          );
+          await client
+            .get({
+              path: `locations`,
+             
+            })
+            .then(({ body }) => {
+              console.log("here we are in locatoion ",body.locations[0]);
+              locationid=body.locations[0].id;
+              ctx.body = {
+                status3: "OK",
+              };
+              ctx.status = 100;
+            })
+            .catch((err) => console.log(err));
+        } catch (error) {}
+
+
+      }
+  
     var tag = tags.toString();
     var respon = [];
 
@@ -440,6 +488,7 @@ app.prepare().then(async () => {
         })
         .catch((err) => console.log(err));
     } catch (error) {}
+    console.log("location id set",locationid)
 
     try {
       const client = new Shopify.Clients.Rest(
@@ -624,7 +673,10 @@ app.prepare().then(async () => {
   });
 
   router.post("/webhooks", async (ctx) => {
-    
+    const shop = ctx.request.header['x-shopify-shop-domain'];
+    console.log(shop)
+    delete ACTIVE_SHOPIFY_SHOPS[shop];
+    console.log("deleted")
     try {
       await Shopify.Webhooks.Registry.process(ctx.req, ctx.res);
       console.log(`Webhook processed, returned status code 200`);

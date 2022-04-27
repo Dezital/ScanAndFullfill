@@ -28,7 +28,7 @@ function FormsAddTags() {
       setLoadData(false);
     } else {
       var tagsupdate = selectedTags;
-      console.log(tagsupdate)
+   
       UpdateTags()
       store.set("fullfilmentTags", tagsupdate);
     

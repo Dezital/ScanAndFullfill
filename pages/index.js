@@ -16,6 +16,7 @@ import {
 } from "@shopify/polaris";
 
 import { useAppBridge } from "@shopify/app-bridge-react";
+import { Redirect } from '@shopify/app-bridge/actions';
 import { getSessionToken } from "@shopify/app-bridge-utils";
 import { toast, ToastContainer } from "react-toastify";
 import { SettingsMajor } from "@shopify/polaris-icons";
@@ -50,6 +51,8 @@ function index(props) {
   const [options, setOptions] = useState([]);
   const [activehelp, setActiveHelp] = useState(false);
   const [activehome, setActiveHome] = useState(true);
+  const app = useAppBridge();
+  const redirect = Redirect.create(app)
 
   useEffect(() => {
   
@@ -81,8 +84,20 @@ function index(props) {
       const res = await fetch("/getMyShopSettings", {
         headers: { Authorization: `Bearer ${token}` },
       });
+      const response2 = await fetch("/billingurl", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const response2data= await response2.json();
+      if(response2data.status !='OK'){
+       console.log("it should redirect")
+       redirect.dispatch(Redirect.Action.REMOTE, response2data.data);
+      
+      }
       const responseData = await res.json();
       if (responseData.status == "OK") {
+        
+      
         store.set("partialFullfillment", responseData.data.ParticalTags);
         store.set("CarrierCompanies", responseData.data.carrier);
         store.set("fullfilmentTags", responseData.data.FullfillTags);
@@ -120,7 +135,7 @@ function index(props) {
 
   var refreshpage = 0;
   var id;
-  const app = useAppBridge();
+ 
 
   const playSuccessSound = () => {
     const audio = new Audio(

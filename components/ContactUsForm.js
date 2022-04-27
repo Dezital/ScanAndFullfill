@@ -36,7 +36,7 @@ function ContactUsForm() {
   const handleFormSubmit = async () => {
     setError(false);
     setErrorData("");
-    console.log(name.length);
+  
     if (message.length < 3) {
       setError(true);
       setErrorData("Enter Your message");
@@ -55,11 +55,11 @@ function ContactUsForm() {
     if (name.length < 3) {
       setError(true);
       setErrorData("Name is invalid");
-      console.log("not valid");
+     
     }
 
     if (!error) {
-      console.log("email send ");
+    
       const res = await fetch("/sendMail", {
         method: "POST",
         body: JSON.stringify({ name, email, message }),

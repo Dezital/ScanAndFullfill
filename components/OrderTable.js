@@ -9,19 +9,18 @@ function OrderTable({orders,setLoading,SetShowOrderDetails,SetOrderDetails,setOr
 
     const handleClick= async(item)=>{
         
-        console.log("clicked on order")
-        console.log(item.id)
+       
         var id =item.id
         setLoading(true);
         const token = await getSessionToken(app);
-           console.log("Token is ", token);
+          
           const res = await fetch(`/ordersdetails?id=${id}`, {
             headers: { Authorization: `Bearer ${token}`,},
           }
           );
           const responseData = await res.json();
           if (responseData.status == "OK") {
-                console.log(responseData.data);
+             
                 SetOrderDetails(responseData.data)
                 setOrderItems(responseData.data.line_items)
                 
@@ -30,8 +29,7 @@ function OrderTable({orders,setLoading,SetShowOrderDetails,SetOrderDetails,setOr
                else{
                 alert("error in fetching data")
                }
-    
-          console.log("this is response")
+
           setLoading(false);
 
 

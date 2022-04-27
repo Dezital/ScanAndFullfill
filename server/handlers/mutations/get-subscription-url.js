@@ -10,15 +10,15 @@ export function RECURRING_CREATE(url,shop,host) {
   return gql`
     mutation {
       appSubscriptionCreate(
-          name: "Super Duper Plan"
+          name: "Standard Plan"
           returnUrl: "${retUrl}"
-          trialDays: 10
+          trialDays: 7
           test: true
           lineItems: [
           {
             plan: {
               appUsagePricingDetails: {
-                  cappedAmount: { amount: 10, currencyCode: USD }
+                  cappedAmount: { amount: 15, currencyCode: USD }
                   terms: "$1 for 1000 emails"
               }
             }
