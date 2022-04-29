@@ -16,6 +16,7 @@ var cron = require("node-cron");
 const nodemailer = require("nodemailer");
 let ctxglobal;
 const crypto = require("crypto");
+let newhost;
 
 dotenv.config();
 const port = parseInt(process.env.PORT, 10) || 8081;
@@ -81,7 +82,7 @@ app.prepare().then(async () => {
         // Access token and shop available in ctx.state.shopify
         const { shop, accessToken, scope } = ctx.state.shopify;
         const host = ctx.query.host;
-
+        newhost=host;
 
         // set shopOrigin cookie, so it can be used for click jacking header
         ctx.cookies.set("shopOrigin", shop, {
@@ -153,7 +154,9 @@ app.prepare().then(async () => {
         
     }else{
       console.log("Not already subscribed")
-      await getSubscriptionUrl(client,shop,host)
+      console.log("host of the new app ",ctx.query.host);
+      console.log("host that saved in url ",newhost)
+      await getSubscriptionUrl(client,session.shop,newhost)
       .then((billingUrl) => {
        ctx.body={
          status:"pending",
@@ -164,7 +167,7 @@ app.prepare().then(async () => {
         console.log(err);
       });
 
-      
+
     }
     ctx.status=200;
 
