@@ -13,7 +13,6 @@ export function RECURRING_CREATE(url,shop,host) {
           name: "Standard Plan"
           returnUrl: "${retUrl}"
           trialDays: 7
-          test: true
           lineItems: [
           {
             plan: {
