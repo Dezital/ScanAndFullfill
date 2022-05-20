@@ -654,7 +654,7 @@ app.prepare().then(async () => {
     const mail = {
       from: email,
       to:"dezital.shopifyapps@gmail.com" ,
-      // bcc:"dezital.shopifyapps@gmail.com",
+      bcc:"dezital.shopifyapps@gmail.com",
       subject: "Message from App",
       text: `By ${name} email:${email} message:${message}`,
     };
