@@ -31,8 +31,8 @@ function HelpPage({
             <div className="setting-screen-left-tab">
               <div className="setting-screen-left-heading">Get In Touch</div>
               <div className="setting-screen-left-discription">
-                We would happy to help with any query you have, simply compelete
-                this
+                We would happy to help with any query you have, simply complete
+                this form
               </div>
             </div>
             <div className="setting-screen-right-tab">

@@ -48,8 +48,6 @@ function ContactUsForm() {
       )
     ) {
       setError(true);
-      alert("true");
-
       setErrorData("Email Address is Invalid");
     }
     if (name.length < 3) {
@@ -58,7 +56,7 @@ function ContactUsForm() {
      
     }
 
-    if (!error) {
+    if (error=='false') {
     
       const res = await fetch("/sendMail", {
         method: "POST",
