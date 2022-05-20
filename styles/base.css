@@ -312,3 +312,8 @@
   font-weight: 600;
 
 }
+.contact-button:hover{
+  cursor: pointer;
+  color: #0e302a;
+
+}
