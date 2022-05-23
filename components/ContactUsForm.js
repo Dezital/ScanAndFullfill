@@ -34,11 +34,13 @@ function ContactUsForm() {
   };
 
   const handleFormSubmit = async () => {
-    setError(false);
+    let thiserror='false'
+    // setError(false);
     setErrorData("");
   
     if (message.length < 3) {
       setError(true);
+      thiserror='true'
       setErrorData("Enter Your message");
     }
 
@@ -47,16 +49,20 @@ function ContactUsForm() {
         /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
       )
     ) {
+      thiserror='true'
       setError(true);
       setErrorData("Email Address is Invalid");
     }
     if (name.length < 3) {
       setError(true);
+      thiserror='true';
       setErrorData("Name is invalid");
      
     }
 
-    if (error=='false') {
+    console.log(thiserror)
+    if (thiserror=='false') {
+
     
       const res = await fetch("/sendMail", {
         method: "POST",
@@ -65,8 +71,8 @@ function ContactUsForm() {
           "Content-type": "text/plain",
         },
       });
-
       useShowSuccess("Your message has been sent successfully");
+      thiserror='true';
       setName("");
       setEmail("");
       setMessage("");

@@ -645,6 +645,7 @@ app.prepare().then(async () => {
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com", //replace with your email provider
       port: 587,
+      secure:false,
       auth: {
         user: "dezital.shopifyapps@gmail.com",
         pass: "Dezital@123",
