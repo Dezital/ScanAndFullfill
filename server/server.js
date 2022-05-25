@@ -643,19 +643,19 @@ app.prepare().then(async () => {
     const message=JSON.parse(ctx.request.body).message;
 
     const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com", //replace with your email provider
+      host: "smtppro.zoho.com", //replace with your email provider
       port: 465,
       secure:true,
       auth: {
-        user: "dezital.shopifyapps@gmail.com",
-        pass: "Dezital@123",
+        user: "appsupport@dezital.com",
+        pass: "AppSupport@11211",
       },
     });
 
     const mail = {
-      from: email,
-      to:"dezital.shopifyapps@gmail.com" ,
-      bcc:"dezital.shopifyapps@gmail.com",
+      from:"appsupport@dezital.com",
+      to:"appsupport@dezital.com" ,
+    //  bcc:"dezital.shopifyapps@gmail.com",
       subject: "Message from App",
       text: `By ${name} email:${email} message:${message}`,
     };
