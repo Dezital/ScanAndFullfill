@@ -644,8 +644,8 @@ app.prepare().then(async () => {
 
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com", //replace with your email provider
-      port: 587,
-      secure:false,
+      port: 465,
+      secure:true,
       auth: {
         user: "dezital.shopifyapps@gmail.com",
         pass: "Dezital@123",
@@ -664,7 +664,7 @@ app.prepare().then(async () => {
     transporter.sendMail(mail, (err, data) => {
       if (err) {
         console.log(err);
-        ctx.response(500)
+        // ctx.response(500)
         // res.status(500).send("Something went wrong.");
       } else {
         console.log("send message")
